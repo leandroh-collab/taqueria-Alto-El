@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taquería El Alto - Pedidos en Línea</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><text x="0" y="30" font-size="30" opacity="0.1">🌮</text></svg>');
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '🌮';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            font-size: 80px;
+            opacity: 0.2;
+            transform: rotate(-15deg);
+        }
+
+        .header::after {
+            content: '🌮';
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            font-size: 80px;
+            opacity: 0.2;
+            transform: rotate(15deg);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .header-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            backdrop-filter: blur(5px);
+        }
+
+        .navigation {
+            background: #2c3e50;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .nav-btn:hover {
+            background: white;
+            color: #2c3e50;
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #2c3e50;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .nav-btn.completed {
+            background: #27ae60;
+            border-color: #27ae60;
+            color: white;
+        }
+
+        .nav-btn .step-number {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            margin-right: 8px;
+            font-size: 0.8em;
+        }
+
+        .content {
+            padding: 30px;
+            min-height: 500px;
+        }
+
+        .section {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .section-intro {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .section-intro h2 {
+            color: #c0392b;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .section-intro p {
+            font-size: 1.2em;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-weight: bold;
+            color: #c0392b;
+            margin-bottom: 10px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .form-section:hover {
+            border-color: #c0392b;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-section h2 {
+            color: #c0392b;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #c0392b;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="time"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #c0392b;
+            box-shadow: 0 0 5px rgba(192, 57, 43, 0.5);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .radio-group label:hover {
+            border-color: #c0392b;
+            background: #fff5f5;
+        }
+
+        .radio-group input[type="radio"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .checkbox-group label:hover {
+            border-color: #c0392b;
+            background: #fff5f5;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            box-shadow: 0 5px 15px rgba(192, 57, 43, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(192, 57, 43, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.6);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6);
+        }
+
+        .orders-list {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #c0392b;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .order-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .order-card.expanded {
+            border-left-color: #27ae60;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .order-card h3 {
+            color: #c0392b;
+            margin-bottom: 10px;
+        }
+
+        .order-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .order-total {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #c0392b;
+            margin-top: 10px;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .btn-toggle {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-toggle:hover {
+            background: #2980b9;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            animation: fadeIn 0.5s;
+        }
+
+        .message-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .message-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .message-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #e0e0e0;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            border-color: #c0392b;
+            background: #c0392b;
+            color: white;
+        }
+
+        .progress-step.completed {
+            border-color: #27ae60;
+            background: #27ae60;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .navigation {
+                flex-direction: column;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .order-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌮 Taquería El Alto</h1>
+            <p>Los Mejores Tacos de la Ciudad - Pedidos en Línea</p>
+            <div class="header-badges">
+                <span class="badge">🔥 Tacos Auténticos</span>
+                <span class="badge">🚚 Entrega Rápida</span>
+                <span class="badge">⭐ Calidad Premium</span>
+                <span class="badge">💯 Satisfacción Garantizada</span>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn active" data-section="intro">
+                <span class="step-number">1</span>Inicio
+            </button>
+            <button class="nav-btn" data-section="tacos">
+                <span class="step-number">2</span>Seleccionar Tacos
+            </button>
+            <button class="nav-btn" data-section="bebidas">
+                <span class="step-number">3</span>Bebidas
+            </button>
+            <button class="nav-btn" data-section="informacion">
+                <span class="step-number">4</span>Tu Información
+            </button>
+            <button class="nav-btn" data-section="confirmacion">
+                <span class="step-number">5</span>Confirmar
+            </button>
+            <button class="nav-btn" data-section="pedidos">
+                <span class="step-number">6</span>Mis Pedidos
+            </button>
+        </div>
+        
+        <div class="content">
+            <div id="messageContainer"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1">1</div>
+                <div class="progress-step" data-step="2">2</div>
+                <div class="progress-step" data-step="3">3</div>
+                <div class="progress-step" data-step="4">4</div>
+                <div class="progress-step" data-step="5">5</div>
+                <div class="progress-step" data-step="6">6</div>
+            </div>
+
+            <!-- Sección de Introducción -->
+            <div class="section active" id="section-intro">
+                <div class="section-intro">
+                    <h2>¡Bienvenido a Taquería El Alto! 🌮</h2>
+                    <p>Descubre la auténtica experiencia de los tacos mexicanos. Selecciona tus tacos favoritos, elige tus bebidas y recibe tu pedido en la comodidad de tu hogar.</p>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card" onclick="navigateTo('tacos')">
+                            <div class="feature-icon">🌮</div>
+                            <div class="feature-title">Tacos Deliciosos</div>
+                            <p>Variedad de tacos auténticos preparados al momento</p>
+                        </div>
+                        <div class="feature-card" onclick="navigateTo('bebidas')">
+                            <div class="feature-icon">🥤</div>
+                            <div class="feature-title">Bebidas Refrescantes</div>
+                            <p>Acompaña tu pedido con nuestras bebidas tradicionales</p>
+                        </div>
+                        <div class="feature-card" onclick="navigateTo('informacion')">
+                            <div class="feature-icon">🚚</div>
+                            <div class="feature-title">Entrega Rápida</div>
+                            <p>Recibe tu pedido caliente y en tiempo récord</p>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group" style="margin-top: 40px;">
+                        <button class="btn btn-primary" onclick="navigateTo('tacos')">
+                            🚀 Comenzar Pedido
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Tacos -->
+            <div class="section" id="section-tacos">
+                <form id="pedidoForm">
+                    <div class="form-section">
+                        <h2>🌮 Selecciona tus Tacos</h2>
+                        <div class="form-group">
+                            <label for="tipoTaco">Tipo de Taco:</label>
+                            <select id="tipoTaco" name="tipoTaco" required>
+                                <option value="">Selecciona un tipo de taco</option>
+                                <option value="pastor">Taco al Pastor - $18</option>
+                                <option value="bistec">Taco de Bistec - $20</option>
+                                <option value="suadero">Taco de Suadero - $19</option>
+                                <option value="chorizo">Taco de Chorizo - $18</option>
+                                <option value="carnitas">Taco de Carnitas - $21</option>
+                                <option value="pollo">Taco de Pollo - $17</option>
+                                <option value="lengua">Taco de Lengua - $25</option>
+                                <option value="tripa">Taco de Tripa - $22</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cantidadTacos">Cantidad de Tacos:</label>
+                            <select id="cantidadTacos" name="cantidadTacos" required>
+                                <option value="">Selecciona la cantidad</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>🧅 Ingredientes y Complementos</h2>
+                        <div class="form-group">
+                            <label>Selecciona los complementos que deseas:</label>
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" name="complementos" value="cilantro">
+                                    🌿 Cilantro
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="complementos" value="cebolla">
+                                    🧅 Cebolla
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="complementos" value="salsaVerde">
+                                    🟢 Salsa Verde
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="complementos" value="salsaRoja">
+                                    🔴 Salsa Roja
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="complementos" value="limon">
+                                    🍋 Limón
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="complementos" value="guacamole">
+                                    🥑 Guacamole (+$10)
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="complementos" value="queso">
+                                    🧀 Queso (+$8)
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="complementos" value="frijoles">
+                                    🫘 Frijoles (+$12)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="navigateTo('intro')">
+                            ⬅️ Anterior
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="navigateTo('bebidas')">
+                            Siguiente ➡️
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sección de Bebidas -->
+            <div class="section" id="section-bebidas">
+                <div class="form-section">
+                    <h2>🥤 Selecciona tus Bebidas</h2>
+                    <div class="form-group">
+                        <label>Bebidas disponibles:</label>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" name="bebidas" value="refresco">
+                                🥤 Refresco - $25
+                            </label>
+                            <label>
+                                <input type="checkbox" name="bebidas" value="aguaHorchata">
+                                🥛 Agua de Horchata - $20
+                            </label>
+                            <label>
+                                <input type="checkbox" name="bebidas" value="aguaJamaica">
+                                🌺 Agua de Jamaica - $20
+                            </label>
+                            <label>
+                                <input type="checkbox" name="bebidas" value="cerveza">
+                                🍺 Cerveza - $35
+                            </label>
+                            <label>
+                                <input type="checkbox" name="bebidas" value="aguaNatural">
+                                💧 Agua Natural - $15
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="navigateTo('tacos')">
+                        ⬅️ Anterior
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="navigateTo('informacion')">
+                        Siguiente ➡️
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sección de Información del Cliente -->
+            <div class="section" id="section-informacion">
+                <div class="form-section">
+                    <h2>📋 Tu Información</h2>
+                    <div class="form-group">
+                        <label for="nombre">Nombre Completo:</label>
+                        <input type="text" id="nombre" name="nombre" required placeholder="Ej: Juan Pérez García">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefono">Teléfono:</label>
+                        <input type="tel" id="telefono" name="telefono" required placeholder="Ej: 555-123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico:</label>
+                        <input type="email" id="email" name="email" required placeholder="Ej: correo@ejemplo.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="direccion">Dirección de Entrega:</label>
+                        <textarea id="direccion" name="direccion" required placeholder="Calle, número, colonia, código postal" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>🚚 Tipo de Entrega</h2>
+                    <div class="form-group">
+                        <label>Tipo de Servicio:</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="tipoEntrega" value="domicilio" checked>
+                                <span>🏠 Entrega a Domicilio</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="tipoEntrega" value="recoger">
+                                <span>🏪 Recoger en Tienda</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="fechaEntrega">Fecha de Entrega:</label>
+                        <input type="date" id="fechaEntrega" name="fechaEntrega" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="horaEntrega">Hora de Entrega:</label>
+                        <input type="time" id="horaEntrega" name="horaEntrega" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>📝 Notas Adicionales</h2>
+                    <div class="form-group">
+                        <label for="notas">¿Alguna instrucción especial para tu pedido?</label>
+                        <textarea id="notas" name="notas" placeholder="Ej: Sin cebolla, extra salsa, alérgico a..." rows="4"></textarea>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="navigateTo('bebidas')">
+                        ⬅️ Anterior
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="navigateTo('confirmacion')">
+                        Siguiente ➡️
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sección de Confirmación -->
+            <div class="section" id="section-confirmacion">
+                <div class="form-section">
+                    <h2>✅ Confirma tu Pedido</h2>
+                    <div id="resumenPedido" style="background: white; padding: 20px; border-radius: 10px;">
+                        <!-- El resumen se llenará dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="navigateTo('informacion')">
+                        ⬅️ Anterior
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="confirmarPedido()">
+                        📦 Confirmar y Enviar Pedido
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sección de Pedidos Registrados -->
+            <div class="section" id="section-pedidos">
+                <div class="orders-list">
+                    <h2 style="color: #c0392b; margin-bottom: 20px;">📋 Mis Pedidos Registrados</h2>
+                    <div id="ordersContainer"></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="navigateTo('intro')">
+                        🏠 Volver al Inicio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PedidoManager {
+            constructor() {
+                this.pedidos = [];
+                this.currentSection = 'intro';
+                this.loadPedidos();
+                this.setupEventListeners();
+                this.renderPedidos();
+                this.setDefaultDate();
+                this.updateNavigation();
+            }
+
+            loadPedidos() {
+                const storedPedidos = localStorage.getItem('pedidosElAlto');
+                if (storedPedidos) {
+                    this.pedidos = JSON.parse(storedPedidos);
+                }
+            }
+
+            savePedidos() {
+                localStorage.setItem('pedidosElAlto', JSON.stringify(this.pedidos));
+            }
+
+            setupEventListeners() {
+                // Navegación
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const section = btn.dataset.section;
+                        this.navigateTo(section);
+                    });
+                });
+
+                // Actualizar mínimo de fecha al día actual
+                const fechaInput = document.getElementById('fechaEntrega');
+                const today = new Date().toISOString().split('T')[0];
+                fechaInput.min = today;
+
+                // Actualizar resumen cuando cambian los campos
+                ['tipoTaco', 'cantidadTacos', 'nombre', 'telefono', 'email', 'direccion', 
+                 'fechaEntrega', 'horaEntrega', 'notas'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('change', () => this.actualizarResumen());
+                        element.addEventListener('input', () => this.actualizarResumen());
+                    }
+                });
+
+                // Actualizar resumen cuando cambian los checkboxes y radios
+                document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => this.actualizarResumen());
+                });
+            }
+
+            setDefaultDate() {
+                const fechaInput = document.getElementById('fechaEntrega');
+                const today = new Date().toISOString().split('T')[0];
+                fechaInput.value = today;
+                
+                const horaInput = document.getElementById('horaEntrega');
+                const now = new Date();
+                const currentHour = now.getHours().toString().padStart(2, '0') + ':' + 
+                                  now.getMinutes().toString().padStart(2, '0');
+                horaInput.value = currentHour;
+            }
+
+            navigateTo(section) {
+                if (section === this.currentSection) return;
+                
+                // Validar si se puede navegar a la sección
+                if (section === 'confirmacion' && !this.validatePedido()) {
+                    this.showMessage('⚠️ Por favor completa los campos obligatorios antes de continuar', 'error');
+                    return;
+                }
+                
+                // Ocultar sección actual
+                document.getElementById(`section-${this.currentSection}`).classList.remove('active');
+                
+                // Mostrar nueva sección
+                document.getElementById(`section-${section}`).classList.add('active');
+                
+                // Actualizar navegación
+                this.currentSection = section;
+                this.updateNavigation();
+                
+                // Actualizar resumen si vamos a confirmación
+                if (section === 'confirmacion') {
+                    this.actualizarResumen();
+                }
+                
+                // Scroll al inicio
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            updateNavigation() {
+                const sections = ['intro', 'tacos', 'bebidas', 'informacion', 'confirmacion', 'pedidos'];
+                const currentIndex = sections.indexOf(this.currentSection);
+                
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    const section = btn.dataset.section;
+                    const sectionIndex = sections.indexOf(section);
+                    
+                    btn.classList.remove('active', 'completed');
+                    
+                    if (section === this.currentSection) {
+                        btn.classList.add('active');
+                    } else if (sectionIndex < currentIndex) {
+                        btn.classList.add('completed');
+                    }
+                });
+                
+                // Actualizar barra de progreso
+                document.querySelectorAll('.progress-step').forEach(step => {
+                    const stepNumber = parseInt(step.dataset.step);
+                    const stepIndex = stepNumber - 1;
+                    
+                    step.classList.remove('active', 'completed');
+                    
+                    if (stepIndex === currentIndex) {
+                        step.classList.add('active');
+                    } else if (stepIndex < currentIndex) {
+                        step.classList.add('completed');
+                    }
+                });
+            }
+
+            validatePedido() {
+                const tipoTaco = document.getElementById('tipoTaco').value;
+                const cantidadTacos = document.getElementById('cantidadTacos').value;
+                
+                if (!tipoTaco || !cantidadTacos) {
+                    return false;
+                }
+                
+                return true;
+            }
+
+            getCheckedValues(name) {
+                const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+                const values = [];
+                checkboxes.forEach(checkbox => {
+                    values.push(checkbox.value);
+                });
+                return values;
+            }
+
+            calcularTotal() {
+                const preciosTacos = {
+                    'pastor': 18,
+                    'bistec': 20,
+                    'suadero': 19,
+                    'chorizo': 18,
+                    'carnitas': 21,
+                    'pollo': 17,
+                    'lengua': 25,
+                    'tripa': 22
+                };
+
+                const preciosComplementos = {
+                    'cilantro': 0,
+                    'cebolla': 0,
+                    'salsaVerde': 0,
+                    'salsaRoja': 0,
+                    'limon': 0,
+                    'guacamole': 10,
+                    'queso': 8,
+                    'frijoles': 12
+                };
+
+                const preciosBebidas = {
+                    'refresco': 25,
+                    'aguaHorchata': 20,
+                    'aguaJamaica': 20,
+                    'cerveza': 35,
+                    'aguaNatural': 15
+                };
+
+                let total = 0;
+                
+                // Calcular tacos
+                const tipoTaco = document.getElementById('tipoTaco').value;
+                const cantidad = parseInt(document.getElementById('cantidadTacos').value) || 0;
+                if (tipoTaco && cantidad > 0) {
+                    total += preciosTacos[tipoTaco] * cantidad;
+                }
+
+                // Calcular complementos
+                const complementos = this.getCheckedValues('complementos');
+                complementos.forEach(complemento => {
+                    total += preciosComplementos[complemento] || 0;
+                });
+
+                // Calcular bebidas
+                const bebidas = this.getCheckedValues('bebidas');
+                bebidas.forEach(bebida => {
+                    total += preciosBebidas[bebida] || 0;
+                });
+
+                return total;
+            }
+
+            actualizarResumen() {
+                const resumenDiv = document.getElementById('resumenPedido');
+                if (!resumenDiv) return;
+                
+                const tipoTaco = document.getElementById('tipoTaco').value;
+                const cantidadTacos = document.getElementById('cantidadTacos').value;
+                const nombre = document.getElementById('nombre').value;
+                const telefono = document.getElementById('telefono').value;
+                const email = document.getElementById('email').value;
+                const direccion = document.getElementById('direccion').value;
+                const tipoEntrega = document.querySelector('input[name="tipoEntrega"]:checked')?.value || 'domicilio';
+                const fechaEntrega = document.getElementById('fechaEntrega').value;
+                const horaEntrega = document.getElementById('horaEntrega').value;
+                const notas = document.getElementById('notas').value;
+                const complementos = this.getCheckedValues('complementos');
+                const bebidas = this.getCheckedValues('bebidas');
+                const total = this.calcularTotal();
+                
+                const tacoNames = {
+                    'pastor': 'Tacos al Pastor',
+                    'bistec': 'Tacos de Bistec',
+                    'suadero': 'Tacos de Suadero',
+                    'chorizo': 'Tacos de Chorizo',
+                    'carnitas': 'Tacos de Carnitas',
+                    'pollo': 'Tacos de Pollo',
+                    'lengua': 'Tacos de Lengua',
+                    'tripa': 'Tacos de Tripa'
+                };
+                
+                resumenDiv.innerHTML = `
+                    <h3 style="color: #c0392b; margin-bottom: 20px;">Resumen del Pedido</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <strong>🌮 Tacos:</strong>
+                        <p>${cantidadTacos} ${tacoNames[tipoTaco] || 'Selecciona tus tacos'}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <strong>🧅 Complementos:</strong>
+                        <p>${complementos.length > 0 ? complementos.map(c => {
+                            const names = {
+                                'cilantro': 'Cilantro',
+                                'cebolla': 'Cebolla',
+                                'salsaVerde': 'Salsa Verde',
+                                'salsaRoja': 'Salsa Roja',
+                                'limon': 'Limón',
+                                'guacamole': 'Guacamole',
+                                'queso': 'Queso',
+                                'frijoles': 'Frijoles'
+                            };
+                            return names[c] || c;
+                        }).join(', ') : 'Sin complementos'}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <strong>🥤 Bebidas:</strong>
+                        <p>${bebidas.length > 0 ? bebidas.map(b => {
+                            const names = {
+                                'refresco': 'Refresco',
+                                'aguaHorchata': 'Agua de Horchata',
+                                'aguaJamaica': 'Agua de Jamaica',
+                                'cerveza': 'Cerveza',
+                                'aguaNatural': 'Agua Natural'
+                            };
+                            return names[b] || b;
+                        }).join(', ') : 'Sin bebidas'}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <strong>📋 Datos del Cliente:</strong>
+                        <p>Nombre: ${nombre || 'Por completar'}</p>
+                        <p>Teléfono: ${telefono || 'Por completar'}</p>
+                        <p>Email: ${email || 'Por completar'}</p>
+                        <p>Dirección: ${direccion || 'Por completar'}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <strong>🚚 Entrega:</strong>
+                        <p>Tipo: ${tipoEntrega === 'domicilio' ? 'Entrega a Domicilio' : 'Recoger en Tienda'}</p>
+                        <p>Fecha: ${fechaEntrega || 'Por seleccionar'}</p>
+                        <p>Hora: ${horaEntrega || 'Por seleccionar'}</p>
+                    </div>
+                    
+                    ${notas ? `
+                        <div style="margin-bottom: 15px;">
+                            <strong>📝 Notas:</strong>
+                            <p>${notas}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="text-align: center; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <strong style="font-size: 1.5em; color: #c0392b;">💰 Total: $${total}</strong>
+                    </div>
+                `;
+            }
+
+            confirmarPedido() {
+                if (!this.validatePedido()) {
+                    this.showMessage('⚠️ Por favor selecciona tus tacos antes de confirmar', 'error');
+                    this.navigateTo('tacos');
+                    return;
+                }
+                
+                const pedido = {
+                    id: Date.now(),
+                    fecha: new Date().toLocaleString(),
+                    nombre: document.getElementById('nombre').value || 'No proporcionado',
+                    telefono: document.getElementById('telefono').value || 'No proporcionado',
+                    email: document.getElementById('email').value || 'No proporcionado',
+                    direccion: document.getElementById('direccion').value || 'Recoger en tienda',
+                    tipoEntrega: document.querySelector('input[name="tipoEntrega"]:checked')?.value || 'domicilio',
+                    fechaEntrega: document.getElementById('fechaEntrega').value,
+                    horaEntrega: document.getElementById('horaEntrega').value,
+                    tipoTaco: document.getElementById('tipoTaco').value,
+                    cantidadTacos: document.getElementById('cantidadTacos').value,
+                    complementos: this.getCheckedValues('complementos'),
+                    bebidas: this.getCheckedValues('bebidas'),
+                    notas: document.getElementById('notas').value,
+                    total: this.calcularTotal()
+                };
+
+                this.pedidos.push(pedido);
+                this.savePedidos();
+                this.renderPedidos();
+                
+                this.showMessage(`✅ ¡Pedido #${pedido.id} realizado con éxito! Total: $${pedido.total}`, 'success');
+                
+                // Navegar a la sección de pedidos
+                setTimeout(() => {
+                    this.navigateTo('pedidos');
+                }, 1500);
+            }
+
+            renderPedidos() {
+                const container = document.getElementById('ordersContainer');
+                
+                if (this.pedidos.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <div style="font-size: 4em; margin-bottom: 20px;">🌮</div>
+                            <p style="color: #666; font-size: 1.2em;">No hay pedidos registrados todavía.</p>
+                            <p style="color: #999;">¡Haz tu primer pedido ahora!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.pedidos.map(pedido => {
+                    const tacoNames = {
+                        'pastor': 'Tacos al Pastor',
+                        'bistec': 'Tacos de Bistec',
+                        'suadero': 'Tacos de Suadero',
+                        'chorizo': 'Tacos de Chorizo',
+                        'carnitas': 'Tacos de Carnitas',
+                        'pollo': 'Tacos de Pollo',
+                        'lengua': 'Tacos de Lengua',
+                        'tripa': 'Tacos de Tripa'
+                    };
+                    
+                    return `
+                        <div class="order-card" id="order-${pedido.id}">
+                            <div class="order-header">
+                                <h3>Pedido #${pedido.id}</h3>
+                                <div class="order-actions">
+                                    <button class="btn-small btn-toggle" onclick="pedidoManager.toggleOrderDetails(${pedido.id})">
+                                        👁️ Ver Detalles
+                                    </button>
+                                    <button class="btn-small btn-delete" onclick="pedidoManager.deletePedido(${pedido.id})">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="order-summary">
+                                <p><strong>Cliente:</strong> ${pedido.nombre}</p>
+                                <p><strong>Tacos:</strong> ${pedido.cantidadTacos} ${tacoNames[pedido.tipoTaco] || 'Tacos'}</p>
+                                <p class="order-total">💰 Total: $${pedido.total}</p>
+                            </div>
+                            <div class="order-details" style="display: none;">
+                                <hr style="margin: 15px 0;">
+                                <p><strong>Fecha del pedido:</strong> ${pedido.fecha}</p>
+                                <p><strong>Teléfono:</strong> ${pedido.telefono}</p>
+                                <p><strong>Email:</strong> ${pedido.email}</p>
+                                <p><strong>Dirección:</strong> ${pedido.direccion}</p>
+                                <p><strong>Tipo de entrega:</strong> ${pedido.tipoEntrega === 'domicilio' ? '🏠 Domicilio' : '🏪 Recoger'}</p>
+                                <p><strong>Fecha de entrega:</strong> ${pedido.fechaEntrega} a las ${pedido.horaEntrega} hrs</p>
+                                <p><strong>Complementos:</strong> ${pedido.complementos.length > 0 ? pedido.complementos.join(', ') : 'Ninguno'}</p>
+                                <p><strong>Bebidas:</strong> ${pedido.bebidas.length > 0 ? pedido.bebidas.join(', ') : 'Ninguna'}</p>
+                                ${pedido.notas ? `<p><strong>Notas:</strong> ${pedido.notas}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            toggleOrderDetails(id) {
+                const orderCard = document.getElementById(`order-${id}`);
+                const details = orderCard.querySelector('.order-details');
+                const button = orderCard.querySelector('.btn-toggle');
+                
+                if (details.style.display === 'none') {
+                    details.style.display = 'block';
+                    button.textContent = '🙈 Ocultar Detalles';
+                    orderCard.classList.add('expanded');
+                } else {
+                    details.style.display = 'none';
+                    button.textContent = '👁️ Ver Detalles';
+                    orderCard.classList.remove('expanded');
+                }
+            }
+
+            deletePedido(id) {
+                if (confirm('¿Estás seguro de que deseas eliminar este pedido?')) {
+                    this.pedidos = this.pedidos.filter(pedido => pedido.id !== id);
+                    this.savePedidos();
+                    this.renderPedidos();
+                    this.showMessage('🗑️ Pedido eliminado correctamente', 'error');
+                }
+            }
+
+            showMessage(message, type) {
+                const container = document.getElementById('messageContainer');
+                container.innerHTML = `<div class="message message-${type}">${message}</div>`;
+                
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        // Inicializar el gestor de pedidos
+        const pedidoManager = new PedidoManager();
+
+        // Función global para navegación desde HTML
+        function navigateTo(section) {
+            pedidoManager.navigateTo(section);
+        }
+
+        // Función global para confirmar pedido
+        function confirmarPedido() {
+            pedidoManager.confirmarPedido();
+        }
+    </script>
+</body>
+</html>
